@@ -195,6 +195,10 @@ app.post('/api/admin/reports', async (req, res) => {
   res.json({ topHosts: topHosts || [], agentsCount: agents.length, totalRecharged, giftsCount: giftsCount || 0 })
 })
 
-app.listen(PORT, () => {
-  console.log(`✅ ZAFFA LIVE يعمل على http://localhost:${PORT}`)
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ ZAFFA LIVE يعمل على المنفذ ${PORT}`)
+})
+
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT:', err.message)
 })
