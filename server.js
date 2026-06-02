@@ -16,12 +16,16 @@ console.log('PORT:', PORT)
 console.log('Has SUPABASE_URL:', !!SUPABASE_URL)
 console.log('Has SUPABASE_SERVICE_KEY:', !!SUPABASE_SERVICE_KEY)
 
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')))
+app.get('/health', (req, res) => res.status(200).send('OK'))
+
+app.use(express.json())
 app.use(express.static(__dirname))
 app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')))
-app.use(express.json())
 
-app.get('/health', (req, res) => res.send('OK'))
+app.get('/', (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8')
+  res.sendFile(path.join(__dirname, 'index.html'))
+})
 
 const supabaseAdmin = SUPABASE_URL && SUPABASE_SERVICE_KEY
   ? createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
