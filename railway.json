@@ -1,0 +1,10 @@
+{
+  "build": {
+    "builder": "railpack",
+    "buildCommand": "npm install"
+  },
+  "deploy": {
+    "startCommand": "npm start",
+    "healthcheckPath": "/"
+  }
+}
