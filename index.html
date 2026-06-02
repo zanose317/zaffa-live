@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - ZAFFA LIVE</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(145deg, #0b0b2b, #1a1a3a); color: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .card { background: rgba(255,255,255,0.1); backdrop-filter: blur(12px); padding: 40px; border-radius: 30px; width: 90%; max-width: 400px; text-align: center; }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 50px; font-size: 1rem; }
+        input { background: #f0f0f0; text-align: center; }
+        button { background: #ffb347; color: #1a1a2e; font-weight: bold; cursor: pointer; }
+        .toggle { margin-top: 15px; font-size: 0.8rem; cursor: pointer; color: #ddd; }
+        .error { color: #ff6b6b; margin-top: 10px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>✨ ZAFFA LIVE ✨</h2>
+    <h3 id="form-title">تسجيل الدخول</h3>
+    <input type="email" id="email" placeholder="البريد الإلكتروني">
+    <input type="password" id="password" placeholder="كلمة المرور">
+    <button id="submit-btn">دخول</button>
+    <div class="toggle" id="toggle-link">ليس لديك حساب؟ سجل الآن</div>
+    <div class="error" id="error-msg"></div>
+</div>
+
+<script type="importmap">
+    {
+      "imports": {
+        "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2"
+      }
+    }
+</script>
+<script type="module">
+    import { supabase } from './supabaseClient.js'
+
+    let isLogin = true
+    const formTitle = document.getElementById('form-title')
+    const submitBtn = document.getElementById('submit-btn')
+    const toggleLink = document.getElementById('toggle-link')
+    const errorMsg = document.getElementById('error-msg')
+    const emailInput = document.getElementById('email')
+    const passwordInput = document.getElementById('password')
+
+    function showError(msg) { errorMsg.innerText = msg; setTimeout(() => errorMsg.innerText = '', 3000); }
+
+    submitBtn.addEventListener('click', async () => {
+        const email = emailInput.value.trim()
+        const password = passwordInput.value.trim()
+        if (!email || !password) { showError('املأ الحقول'); return; }
+
+        if (isLogin) {
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+            if (error) { showError(error.message); return; }
+            const res = await fetch('/api/get-profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: data.user.id })
+            })
+            const result = await res.json()
+            if (result.error) { showError(result.error); return; }
+            localStorage.setItem('current_user', JSON.stringify(result.profile))
+            if (result.profile.role === 'admin') window.location.href = 'admin-dashboard.html'
+            else if (result.profile.role === 'recharge_agent') window.location.href = 'agent-recharge.html'
+            else if (result.profile.role === 'host_agent') window.location.href = 'agent-host.html'
+            else if (result.profile.role === 'host') window.location.href = 'host-dashboard.html'
+            else window.location.href = 'user-dashboard.html'
+        } else {
+            const res = await fetch('/api/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            })
+            const result = await res.json()
+            if (result.error) { showError(result.error); return; }
+            alert('تم إنشاء الحساب، سجل دخول الآن')
+            isLogin = true
+            formTitle.innerText = 'تسجيل الدخول'
+            submitBtn.innerText = 'دخول'
+            toggleLink.innerText = 'ليس لديك حساب؟ سجل الآن'
+        }
+    })
+
+    toggleLink.addEventListener('click', () => {
+        isLogin = !isLogin
+        formTitle.innerText = isLogin ? 'تسجيل الدخول' : 'إنشاء حساب جديد'
+        submitBtn.innerText = isLogin ? 'دخول' : 'تسجيل'
+        toggleLink.innerText = isLogin ? 'ليس لديك حساب؟ سجل الآن' : 'لديك حساب؟ سجل دخول'
+    })
+</script>
+</body>
+</html>

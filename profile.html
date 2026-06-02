@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>بروفايلي - ZAFFA LIVE</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0e0e1a; color: #eee; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .card { background: #1e1e2f; padding: 30px; border-radius: 30px; width: 350px; text-align: center; }
+        button { background: #ffb347; border: none; padding: 8px 16px; border-radius: 30px; cursor: pointer; margin-top: 20px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>👤 بروفايلي</h2>
+    <p><strong>اسم المستخدم:</strong> <span id="username"></span></p>
+    <p><strong>البريد:</strong> <span id="email"></span></p>
+    <p><strong>رصيد الكوينز:</strong> <span id="coins"></span></p>
+    <p><strong>رصيد الماس:</strong> <span id="diamonds"></span></p>
+    <p><strong>مستوى VIP:</strong> <span id="vip"></span></p>
+    <p><strong>الدور:</strong> <span id="role"></span></p>
+    <p><strong>إجمالي ما شحنته:</strong> <span id="totalRecharged"></span></p>
+    <button id="back">رجوع</button>
+</div>
+<script type="importmap">
+    { "imports": { "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2" } }
+</script>
+<script type="module">
+    import { supabase } from './supabaseClient.js'
+    let user = JSON.parse(localStorage.getItem('current_user'))
+    if (!user) window.location.href = 'index.html'
+    async function loadProfile() {
+        const res = await fetch('/api/get-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id })
+        })
+        const result = await res.json()
+        const data = result.profile
+        if (data) {
+            document.getElementById('username').innerText = data.username
+            document.getElementById('email').innerText = data.email
+            document.getElementById('coins').innerText = data.coins
+            document.getElementById('diamonds').innerText = data.diamonds
+            document.getElementById('vip').innerText = data.vip_level || 1
+            document.getElementById('role').innerText = data.role
+            document.getElementById('totalRecharged').innerText = data.total_recharged || 0
+        }
+    }
+    document.getElementById('back').onclick = () => {
+        const role = user.role
+        if (role === 'admin') window.location.href = 'admin-dashboard.html'
+        else if (role === 'recharge_agent') window.location.href = 'agent-recharge.html'
+        else if (role === 'host_agent') window.location.href = 'agent-host.html'
+        else if (role === 'host') window.location.href = 'host-dashboard.html'
+        else window.location.href = 'user-dashboard.html'
+    }
+    loadProfile()
+</script>
+</body>
+</html>

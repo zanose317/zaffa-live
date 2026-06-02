@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لعبة فرعون - ZAFFA LIVE</title>
+    <style>
+        body { background: #0a0a1a; color: gold; text-align: center; font-family: 'Segoe UI'; padding: 20px; }
+        .slot-machine { display: flex; justify-content: center; gap: 20px; margin: 40px; }
+        .reel { width: 100px; height: 100px; background: black; border: 3px solid gold; font-size: 3rem; display: flex; align-items: center; justify-content: center; border-radius: 20px; }
+        button { background: gold; color: black; padding: 10px 30px; font-size: 1.5rem; border: none; border-radius: 40px; cursor: pointer; margin: 10px; }
+        input { padding: 8px; font-size: 1rem; border-radius: 20px; border: none; text-align: center; }
+    </style>
+</head>
+<body>
+<h1>🎰 لعبة فرعون – جرب حظك 🎰</h1>
+<p>نسبة الحظ اليومية: <span id="luck-display">??</span>%</p>
+<p>رصيدك: <span id="user-coins">0</span> كوينز</p>
+<input type="number" id="bet-amount" placeholder="الرهان (كوينز)" value="10">
+<button id="spin">🎲 دُوّار 🎲</button>
+<div class="slot-machine">
+    <div class="reel" id="reel1">?</div>
+    <div class="reel" id="reel2">?</div>
+    <div class="reel" id="reel3">?</div>
+</div>
+<p id="result"></p>
+<button id="back">رجوع</button>
+
+<script type="importmap">
+    { "imports": { "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2" } }
+</script>
+<script type="module">
+    import { supabase } from './supabaseClient.js'
+
+    async function db(action, table, match, data, opts = {}) {
+        const res = await fetch('/api/admin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, table, match, data, ...opts })
+        })
+        return res.json()
+    }
+
+    let currentUser = JSON.parse(localStorage.getItem('current_user'))
+    if (!currentUser) window.location.href = 'index.html'
+
+    let slotLuck = 10
+    async function loadSettings() {
+        const { data } = await db('select', 'settings', { key: 'slot_machine_luck_percent' }, 'value', { single: true })
+        if (data) slotLuck = parseInt(data.value)
+        document.getElementById('luck-display').innerText = slotLuck
+    }
+    async function updateCoins() {
+        const { data } = await db('select', 'users', { id: currentUser.id }, 'coins', { single: true })
+        if (data) currentUser.coins = data.coins
+        document.getElementById('user-coins').innerText = currentUser.coins
+    }
+
+    document.getElementById('spin').onclick = async () => {
+        const bet = parseInt(document.getElementById('bet-amount').value)
+        if (isNaN(bet) || bet <= 0 || bet > currentUser.coins) {
+            alert('رهان غير صحيح')
+            return
+        }
+        const newCoins = currentUser.coins - bet
+        await db('update', 'users', { id: currentUser.id }, { coins: newCoins })
+        currentUser.coins = newCoins
+        await updateCoins()
+
+        const reel1 = Math.floor(Math.random() * 9)
+        const reel2 = Math.floor(Math.random() * 9)
+        const reel3 = Math.floor(Math.random() * 9)
+        document.getElementById('reel1').innerText = reel1
+        document.getElementById('reel2').innerText = reel2
+        document.getElementById('reel3').innerText = reel3
+
+        const winRandom = Math.random() * 100
+        let winAmount = 0
+        if (winRandom <= slotLuck) {
+            if (reel1 === reel2 && reel2 === reel3) winAmount = bet * 10
+            else if (reel1 === reel2 || reel2 === reel3 || reel1 === reel3) winAmount = bet * 3
+            else winAmount = bet * 2
+            const finalCoins = currentUser.coins + winAmount
+            await db('update', 'users', { id: currentUser.id }, { coins: finalCoins })
+            currentUser.coins = finalCoins
+            document.getElementById('result').innerHTML = `🎉 فزت! ربحت ${winAmount} كوينز.`
+        } else {
+            document.getElementById('result').innerHTML = `😢 خسرت! حظ أوفر المرة القادمة.`
+        }
+        await updateCoins()
+    }
+    document.getElementById('back').onclick = () => {
+        const role = currentUser.role
+        if (role === 'user') window.location.href = 'user-dashboard.html'
+        else if (role === 'admin') window.location.href = 'admin-dashboard.html'
+        else window.location.href = 'index.html'
+    }
+    loadSettings()
+    updateCoins()
+</script>
+</body>
+</html>

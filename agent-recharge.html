@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>وكيل الشحن - ZAFFA LIVE</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0e0e1a; color: #eee; padding: 20px; direction: rtl; }
+        .container { max-width: 800px; margin: auto; background: #1e1e2f; border-radius: 30px; padding: 20px; }
+        button { background: #ffb347; border: none; padding: 8px 16px; border-radius: 30px; cursor: pointer; margin: 5px; }
+        .logout { background: #dc3545; color: white; }
+        input { padding: 8px; border-radius: 20px; border: none; margin: 5px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>💰 وكيل الشحن - ZAFFA LIVE</h2>
+    <button class="logout" id="logout">تسجيل خروج</button>
+    <div class="section">
+        <h3>👥 شحن مستخدم</h3>
+        <input type="text" id="user-name" placeholder="اسم المستخدم">
+        <input type="number" id="coins-amount" placeholder="عدد الكوينز">
+        <button id="recharge-user">شحن المستخدم</button>
+        <p id="result"></p>
+    </div>
+</div>
+<script type="importmap">
+    { "imports": { "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2" } }
+</script>
+<script type="module">
+    import { supabase } from './supabaseClient.js'
+
+    async function db(action, table, match, data, opts = {}) {
+        const res = await fetch('/api/admin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, table, match, data, ...opts })
+        })
+        return res.json()
+    }
+
+    let currentAgent = JSON.parse(localStorage.getItem('current_user'))
+    if (!currentAgent || currentAgent.role !== 'recharge_agent') window.location.href = 'index.html'
+
+    document.getElementById('recharge-user').onclick = async () => {
+        const username = document.getElementById('user-name').value.trim()
+        const amount = parseInt(document.getElementById('coins-amount').value)
+        if (!username || isNaN(amount) || amount <= 0) {
+            document.getElementById('result').innerText = 'بيانات غير صحيحة'
+            return
+        }
+        const { data: user } = await db('select', 'users', { username }, 'id, coins, total_recharged', { single: true })
+        if (!user) {
+            document.getElementById('result').innerText = 'المستخدم غير موجود'
+            return
+        }
+        const newCoins = user.coins + amount
+        await db('update', 'users', { id: user.id }, { coins: newCoins, total_recharged: (user.total_recharged || 0) + amount })
+        await db('insert', 'transactions', null, { from_user: currentAgent.id, to_user: user.id, amount, type: 'recharge' })
+        document.getElementById('result').innerHTML = `✅ تم شحن ${amount} كوينز للمستخدم ${username}`
+    }
+
+    document.getElementById('logout').onclick = async () => { await supabase.auth.signOut(); localStorage.clear(); window.location.href = 'index.html' }
+</script>
+</body>
+</html>

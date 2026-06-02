@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة المستخدم - ZAFFA LIVE</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0e0e1a; color: #eee; padding: 20px; direction: rtl; }
+        .container { max-width: 800px; margin: auto; background: #1e1e2f; border-radius: 30px; padding: 20px; }
+        .user-info { background: #2d2d44; padding: 15px; border-radius: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; margin-bottom: 20px; }
+        .balance { background: #00000055; padding: 8px 12px; border-radius: 15px; min-width: 100px; text-align: center; }
+        button { background: #ffb347; border: none; padding: 8px 16px; border-radius: 30px; cursor: pointer; margin: 5px; }
+        .logout { background: #dc3545; color: white; }
+        .section { margin-top: 30px; border-top: 1px solid #444; padding-top: 20px; }
+        input, select { padding: 8px; border-radius: 20px; border: none; margin: 5px; }
+        .error { color: #ff6b6b; }
+        .success { color: #28a745; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>🎤 لوحة المستخدم - ZAFFA LIVE</h2>
+    <div class="user-info" id="user-info"></div>
+    <button class="logout" id="logout">تسجيل خروج</button>
+
+    <div class="section">
+        <h3>💰 شحن الكوينز عبر وكيل</h3>
+        <input type="text" id="agent-username" placeholder="اسم وكيل الشحن">
+        <input type="number" id="recharge-amount" placeholder="عدد الكوينز">
+        <button id="recharge-by-agent">شحن</button>
+        <p id="recharge-result"></p>
+    </div>
+
+    <div class="section">
+        <h3>🎁 إرسال هدية لمضيف</h3>
+        <input type="text" id="host-name" placeholder="اسم المضيف">
+        <select id="gift-select"></select>
+        <button id="send-gift">إرسال الهدية</button>
+        <p id="gift-result"></p>
+    </div>
+
+    <div class="section">
+        <h3>🎮 الألعاب والغرف</h3>
+        <button id="open-game">🎰 لعبة فرعون</button>
+        <button id="open-room">🎙️ غرفة صوتية</button>
+        <button id="open-profile">👤 بروفايلي</button>
+    </div>
+</div>
+
+<script type="importmap">
+    { "imports": { "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2" } }
+</script>
+<script type="module">
+    import { supabase } from './supabaseClient.js'
+    let currentUser = JSON.parse(localStorage.getItem('current_user'))
+    if (!currentUser || currentUser.role !== 'user') window.location.href = 'index.html'
+
+    async function updateUI() {
+        const res = await fetch('/api/get-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: currentUser.id })
+        })
+        const result = await res.json()
+        if (result.profile) currentUser = result.profile
+        document.getElementById('user-info').innerHTML = `
+            <div class="balance">👤 ${currentUser.username}</div>
+            <div class="balance">💰 كوينز: ${currentUser.coins}</div>
+            <div class="balance">💎 ماس: ${currentUser.diamonds}</div>
+            <div class="balance">⭐ VIP ${currentUser.vip_level || 1}</div>
+        `
+        localStorage.setItem('current_user', JSON.stringify(currentUser))
+    }
+
+    async function loadGifts() {
+        const res = await fetch('/api/gifts')
+        const data = await res.json()
+        const select = document.getElementById('gift-select')
+        select.innerHTML = '<option value="">اختر هدية</option>';
+        (data.gifts || []).forEach(g => {
+            const option = document.createElement('option')
+            option.value = g.id
+            option.textContent = `${g.name} (${g.price_coins} كوينز)`
+            select.appendChild(option)
+        })
+    }
+
+    document.getElementById('recharge-by-agent').onclick = async () => {
+        const agentName = document.getElementById('agent-username').value.trim()
+        const amount = parseInt(document.getElementById('recharge-amount').value)
+        const r = document.getElementById('recharge-result')
+        if (!agentName || isNaN(amount) || amount <= 0) { r.innerText = 'بيانات غير صحيحة'; return }
+        const res = await fetch('/api/recharge', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: currentUser.id, agentUsername: agentName, amount })
+        })
+        const result = await res.json()
+        if (result.error) { r.innerText = result.error; return }
+        currentUser.coins = result.coins
+        r.innerText = `✅ تم شحن ${amount} كوينز بواسطة ${agentName}`
+        await updateUI()
+    }
+
+    document.getElementById('send-gift').onclick = async () => {
+        const hostName = document.getElementById('host-name').value.trim()
+        const giftId = document.getElementById('gift-select').value
+        const r = document.getElementById('gift-result')
+        if (!hostName || !giftId) { r.innerText = 'اختر مضيف وهدية'; return }
+        const res = await fetch('/api/send-gift', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: currentUser.id, hostUsername: hostName, giftId })
+        })
+        const result = await res.json()
+        if (result.error) { r.innerText = result.error; return }
+        currentUser.coins = result.coins
+        if (result.luckyWin > 0) {
+            r.innerHTML = `<span class="success">🎉 فزت! ربحت ${result.luckyWin} كوينز إضافية من هدية الحظ 🎉</span>`
+        } else {
+            r.innerHTML = `✅ تم إرسال الهدية للمضيف ${hostName}`
+        }
+        await updateUI()
+    }
+
+    document.getElementById('open-game').onclick = () => window.location.href = 'game-slot.html'
+    document.getElementById('open-room').onclick = () => window.location.href = 'room.html'
+    document.getElementById('open-profile').onclick = () => window.location.href = 'profile.html'
+    document.getElementById('logout').onclick = async () => { await supabase.auth.signOut(); localStorage.clear(); window.location.href = 'index.html' }
+
+    updateUI()
+    loadGifts()
+</script>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الأدمن - ZAFFA LIVE</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a1a; color: #eee; padding: 20px; direction: rtl; }
+        .container { max-width: 1400px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .logout-btn { background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 30px; cursor: pointer; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn { background: #2a2a3c; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; color: white; transition: 0.3s; }
+        .tab-btn.active { background: #ffb347; color: black; }
+        .tab-content { display: none; background: #1e1e2e; border-radius: 20px; padding: 20px; }
+        .tab-content.active { display: block; }
+        .card { background: #2a2a3c; padding: 15px; border-radius: 15px; margin-bottom: 20px; }
+        .flex-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-bottom: 15px; }
+        input, select, button { padding: 8px 12px; border-radius: 20px; border: none; }
+        button { background: #ffb347; cursor: pointer; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; border-bottom: 1px solid #444; text-align: center; }
+        .danger { background: #dc3545; color: white; }
+        .success { background: #28a745; color: white; }
+        .edit-btn, .delete-btn { color: white; border: none; padding: 4px 8px; border-radius: 15px; margin: 2px; cursor: pointer; }
+        .delete-btn { background: #dc3545; }
+        @media (max-width: 700px) { .flex-row { flex-direction: column; align-items: stretch; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🔧 لوحة تحكم الأدمن - ZAFFA LIVE</h1>
+        <button class="logout-btn" id="logout">تسجيل خروج</button>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="dashboard">📊 عام</button>
+        <button class="tab-btn" data-tab="users">👥 المستخدمون</button>
+        <button class="tab-btn" data-tab="roles">🎭 الأدوار والصلاحيات</button>
+        <button class="tab-btn" data-tab="agents">🤝 وكالات المضيفين</button>
+        <button class="tab-btn" data-tab="gifts">🎁 الهدايا</button>
+        <button class="tab-btn" data-tab="games">🎮 الألعاب والنسب</button>
+        <button class="tab-btn" data-tab="reports">📈 التقارير</button>
+    </div>
+
+    <div id="dashboard" class="tab-content active">
+        <div class="card"><h3>📊 إحصائيات سريعة</h3><div id="stats">جار التحميل...</div></div>
+        <div class="card">
+            <h3>⚙️ إعدادات عامة</h3>
+            <div class="flex-row"><label>نسبة الحظ اليومية (Lucky Box):</label><input type="number" id="daily-luck" step="5" min="0" max="100"><button id="save-daily-luck">حفظ</button></div>
+            <div class="flex-row"><label>نسبة ربح لعبة فرعون (Slot):</label><input type="number" id="slot-luck" step="5" min="0" max="100"><button id="save-slot-luck">حفظ</button></div>
+            <div class="flex-row"><label>الحد الأقصى للمكسب اليومي (كوينز):</label><input type="number" id="max-daily-win"><button id="save-max-win">حفظ</button></div>
+            <div class="flex-row"><label>نسبة الكاش باك (0-20):</label><input type="number" id="cashback-percent" step="1" min="0" max="20"><button id="save-cashback">حفظ</button></div>
+        </div>
+    </div>
+
+    <div id="users" class="tab-content">
+        <div class="card">
+            <h3>🔍 بحث وتصفية</h3>
+            <div class="flex-row"><input type="text" id="search-user" placeholder="اسم المستخدم أو البريد"><button id="search-btn">بحث</button><button id="reset-search">إعادة تعيين</button></div>
+        </div>
+        <div class="card">
+            <h3>📋 قائمة المستخدمين</h3>
+            <div style="overflow-x: auto;"><table id="users-table"><thead><tr><th>ID</th><th>اسم المستخدم</th><th>البريد</th><th>كوينز</th><th>ماس</th><th>VIP</th><th>إجمالي شحن</th><th>الدور</th><th>محظور</th><th>إجراءات</th></tr></thead><tbody></tbody></table></div>
+        </div>
+    </div>
+
+    <div id="roles" class="tab-content">
+        <div class="card">
+            <h3>🎭 صلاحيات الأدوار (يمكنك تعديلها)</h3>
+            <div id="roles-permissions-container">جار التحميل...</div>
+            <button id="save-roles-permissions">حفظ جميع التغييرات</button>
+        </div>
+    </div>
+
+    <div id="agents" class="tab-content">
+        <div class="card">
+            <h3>➕ إنشاء وكالة مضيفين جديدة</h3>
+            <div class="flex-row"><input type="text" id="agency-name" placeholder="اسم الوكالة"><input type="number" id="agency-commission" placeholder="نسبة العمولة% (مثل 10)"><input type="text" id="agent-username" placeholder="اسم وكيل المضيفين"><button id="create-agency">إنشاء وكالة</button></div>
+        </div>
+        <div class="card">
+            <h3>📋 وكالات المضيفين</h3>
+            <table id="agencies-table"><thead><tr><th>الوكالة</th><th>الوكيل</th><th>العمولة%</th><th>المضيفين</th><th>إجراءات</th></tr></thead><tbody></tbody></table>
+        </div>
+        <div class="card">
+            <h3>➕ تعيين مستخدم كمضيف تحت وكالة</h3>
+            <div class="flex-row"><input type="text" id="host-username" placeholder="اسم المستخدم المضيف"><select id="agency-select"></select><button id="assign-host">تعيين</button></div>
+        </div>
+        <div class="card">
+            <h3>🔁 ترقية مستخدم إلى وكيل شحن</h3>
+            <div class="flex-row"><input type="text" id="recharge-agent-name" placeholder="اسم المستخدم"><button id="make-recharge-agent">جعله وكيل شحن</button></div>
+        </div>
+    </div>
+
+    <div id="gifts" class="tab-content">
+        <div class="card">
+            <h3>➕ إضافة هدية جديدة</h3>
+            <div class="flex-row"><input type="text" id="gift-name" placeholder="اسم الهدية"><input type="number" id="gift-price" placeholder="السعر بالكوينز"><label><input type="checkbox" id="gift-is-lucky"> هدية حظ</label><input type="text" id="gift-video" placeholder="رابط فيديو (للمشاهير)"><button id="add-gift">إضافة</button></div>
+        </div>
+        <div class="card">
+            <h3>📋 الهدايا الحالية</h3>
+            <table id="gifts-table"><thead><tr><th>الاسم</th><th>السعر</th><th>حظ؟</th><th>نسبة الحظ%</th><th>فيديو</th><th>إجراءات</th></tr></thead><tbody></tbody></table>
+        </div>
+    </div>
+
+    <div id="games" class="tab-content">
+        <div class="card"><h3>🎲 ألعاب الحظ الإضافية</h3><div class="flex-row"><label>نسبة ربح لعبة الروليت:</label><input type="number" id="roulette-luck" step="5"><button id="save-roulette">حفظ</button></div></div>
+    </div>
+
+    <div id="reports" class="tab-content">
+        <div class="card"><h3>🏆 أكثر 10 مضيفين ربحًا</h3><div id="top-hosts"></div></div>
+        <div class="card"><h3>💼 وكلاء الشحن</h3><div id="top-agents"></div></div>
+        <div class="card"><h3>💰 إجمالي الكوينز المشحونة</h3><div id="total-recharged"></div></div>
+        <div class="card"><h3>📦 إجمالي الهدايا المرسلة</h3><div id="total-gifts-sent"></div></div>
+    </div>
+</div>
+
+<script type="importmap">
+    { "imports": { "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2" } }
+</script>
+<script type="module">
+    import { supabase } from './supabaseClient.js'
+
+    async function db(action, table, match, data, opts = {}) {
+        const res = await fetch('/api/admin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, table, match, data, ...opts })
+        })
+        return res.json()
+    }
+
+    async function checkAdmin() {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) { window.location.href = 'index.html'; return }
+        const res = await db('select', 'users', { id: user.id }, 'role', { single: true })
+        if (!res.data || res.data.role !== 'admin') { alert('غير مصرح لك'); window.location.href = 'index.html'; return }
+        loadAllTabs()
+    }
+
+    async function loadAllTabs() { loadStats(); loadUsers(); loadRolesPermissions(); loadAgencies(); loadGifts(); loadSettings(); loadReports() }
+
+    async function loadStats() {
+        const r = await fetch('/api/admin/stats', { method: 'POST' })
+        const s = await r.json()
+        document.getElementById('stats').innerHTML = `<div>👥 إجمالي المستخدمين: ${s.totalUsers}</div><div>💰 إجمالي الكوينز: ${s.totalCoins}</div>`
+    }
+
+    async function loadUsers(search = '') {
+        let result
+        if (search) {
+            const { data } = await db('select', 'users', { op: 'or', args: [`username.ilike.%${search}%,email.ilike.%${search}%`] }, '*')
+            result = { data }
+        } else {
+            result = await db('select', 'users', null, '*')
+        }
+        const tbody = document.querySelector('#users-table tbody')
+        tbody.innerHTML = ''
+        for (const u of (result.data || [])) {
+            const row = tbody.insertRow()
+            row.insertCell(0).innerText = u.id.slice(0, 8) + '…'
+            row.insertCell(1).innerText = u.username
+            row.insertCell(2).innerText = u.email
+            row.insertCell(3).innerHTML = `${u.coins} <button class="edit-btn" onclick="window._editCoins('${u.id}')">✏️</button>`
+            row.insertCell(4).innerText = u.diamonds
+            row.insertCell(5).innerText = u.vip_level
+            row.insertCell(6).innerText = u.total_recharged || 0
+            row.insertCell(7).innerHTML = `<select onchange="window._changeRole('${u.id}', this.value)">
+                <option value="user" ${u.role === 'user' ? 'selected' : ''}>مستخدم عادي</option>
+                <option value="host" ${u.role === 'host' ? 'selected' : ''}>مضيف</option>
+                <option value="recharge_agent" ${u.role === 'recharge_agent' ? 'selected' : ''}>وكيل شحن</option>
+                <option value="host_agent" ${u.role === 'host_agent' ? 'selected' : ''}>وكيل مضيفين</option>
+                <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>أدمن</option>
+            </select>`
+            row.insertCell(8).innerHTML = u.is_banned ? '<span class="danger">محظور</span>' : '<span class="success">نشط</span>'
+            const actions = row.insertCell(9)
+            const banBtn = document.createElement('button')
+            banBtn.innerText = u.is_banned ? 'رفع الحظر' : 'حظر'
+            banBtn.className = u.is_banned ? 'success' : 'danger'
+            banBtn.onclick = () => toggleBan(u.id, !u.is_banned)
+            actions.appendChild(banBtn)
+        }
+    }
+
+    window._editCoins = async (id) => {
+        const newCoins = prompt('أدخل رصيد الكوينز الجديد')
+        if (newCoins !== null) {
+            await db('update', 'users', { id }, { coins: parseInt(newCoins) })
+            loadUsers(document.getElementById('search-user').value)
+        }
+    }
+
+    window._changeRole = async (id, role) => {
+        await db('update', 'users', { id }, { role })
+        loadUsers(document.getElementById('search-user').value)
+    }
+
+    async function toggleBan(userId, isBanned) {
+        await db('update', 'users', { id: userId }, { is_banned: isBanned })
+        loadUsers(document.getElementById('search-user').value)
+    }
+
+    async function loadRolesPermissions() {
+        const result = await db('select', 'roles_permissions', null, '*')
+        const container = document.getElementById('roles-permissions-container')
+        container.innerHTML = ''
+        for (const rp of (result.data || [])) {
+            const card = document.createElement('div')
+            card.className = 'card'
+            card.innerHTML = `<h4>${rp.role}</h4><div id="perm-${rp.role}"></div>`
+            container.appendChild(card)
+            const permsDiv = document.getElementById(`perm-${rp.role}`)
+            const perms = rp.permissions
+            for (const [key, val] of Object.entries(perms)) {
+                const label = document.createElement('label')
+                label.style.display = 'block'
+                label.innerHTML = `<input type="checkbox" data-role="${rp.role}" data-perm="${key}" ${val ? 'checked' : ''}> ${key}`
+                permsDiv.appendChild(label)
+            }
+        }
+    }
+
+    async function saveAllRolesPermissions() {
+        const checkboxes = document.querySelectorAll('#roles-permissions-container input[type="checkbox"]')
+        const updates = {}
+        for (const cb of checkboxes) {
+            if (!updates[cb.dataset.role]) updates[cb.dataset.role] = {}
+            updates[cb.dataset.role][cb.dataset.perm] = cb.checked
+        }
+        for (const [role, perms] of Object.entries(updates)) {
+            await db('update', 'roles_permissions', { role }, { permissions: perms })
+        }
+        alert('تم حفظ الصلاحيات')
+    }
+
+    async function loadAgencies() {
+        const result = await db('select', 'host_agencies', null, '*')
+        const agencies = result.data || []
+        const tbody = document.querySelector('#agencies-table tbody')
+        tbody.innerHTML = ''
+        for (const a of agencies) {
+            const { data: agentUser } = await db('select', 'users', { id: a.agent_id }, 'username', { single: true })
+            const { data: hostLinks } = await db('select', 'agency_hosts', { agency_id: a.id }, 'host_id')
+            const hostIds = (hostLinks || []).map(h => h.host_id)
+            let hostNames = 'لا يوجد'
+            if (hostIds.length > 0) {
+                const { data: hosts } = await db('select', 'users', null, 'username')
+                hostNames = (hosts || []).filter(u => hostIds.includes(u.id)).map(u => u.username).join(', ')
+            }
+            const row = tbody.insertRow()
+            row.insertCell(0).innerText = a.agency_name
+            row.insertCell(1).innerText = (agentUser || {}).username || 'غير معروف'
+            row.insertCell(2).innerText = a.commission_percent
+            row.insertCell(3).innerText = hostNames
+            const actions = row.insertCell(4)
+            const delBtn = document.createElement('button')
+            delBtn.innerText = 'حذف'
+            delBtn.className = 'delete-btn'
+            delBtn.onclick = async () => { await db('delete', 'host_agencies', { id: a.id }); loadAgencies() }
+            actions.appendChild(delBtn)
+        }
+        const agencySelect = document.getElementById('agency-select')
+        agencySelect.innerHTML = '<option value="">اختر وكالة</option>'
+        for (const a of agencies) {
+            const { data: au } = await db('select', 'users', { id: a.agent_id }, 'username', { single: true })
+            const opt = document.createElement('option')
+            opt.value = a.id
+            opt.innerText = `${a.agency_name} (${(au || {}).username || ''})`
+            agencySelect.appendChild(opt)
+        }
+    }
+
+    document.getElementById('create-agency').onclick = async () => {
+        const name = document.getElementById('agency-name').value
+        const comm = parseInt(document.getElementById('agency-commission').value)
+        const agentName = document.getElementById('agent-username').value
+        if (!name || !comm || !agentName) { alert('املأ جميع الحقول'); return }
+        const { data: agent } = await db('select', 'users', { username: agentName }, 'id', { single: true })
+        if (!agent) { alert('الوكيل غير موجود'); return }
+        await db('insert', 'host_agencies', null, { agency_name: name, agent_id: agent.id, commission_percent: comm })
+        alert('تم إنشاء الوكالة')
+        loadAgencies()
+    }
+    document.getElementById('assign-host').onclick = async () => {
+        const hostName = document.getElementById('host-username').value
+        const agencyId = document.getElementById('agency-select').value
+        if (!hostName || !agencyId) { alert('اختر مضيف ووكالة'); return }
+        const { data: host } = await db('select', 'users', { username: hostName }, 'id', { single: true })
+        if (!host) { alert('المضيف غير موجود'); return }
+        await db('insert', 'agency_hosts', null, { agency_id: agencyId, host_id: host.id })
+        await db('update', 'users', { id: host.id }, { role: 'host', host_agency_id: agencyId })
+        alert('تم تعيين المضيف')
+        loadAgencies()
+    }
+    document.getElementById('make-recharge-agent').onclick = async () => {
+        const username = document.getElementById('recharge-agent-name').value
+        const { data: user } = await db('select', 'users', { username }, 'id', { single: true })
+        if (!user) { alert('المستخدم غير موجود'); return }
+        await db('update', 'users', { id: user.id }, { role: 'recharge_agent' })
+        alert('تم جعله وكيل شحن')
+        loadUsers()
+    }
+
+    async function loadGifts() {
+        const result = await db('select', 'gifts', null, '*')
+        const tbody = document.querySelector('#gifts-table tbody')
+        tbody.innerHTML = ''
+        for (const g of (result.data || [])) {
+            const row = tbody.insertRow()
+            row.insertCell(0).innerText = g.name
+            row.insertCell(1).innerText = g.price_coins
+            row.insertCell(2).innerText = g.is_lucky ? 'نعم' : 'لا'
+            row.insertCell(3).innerHTML = g.is_lucky ? `<input type="number" data-id="${g.id}" class="lucky-percent" value="${g.lucky_percent}" style="width:70px">` : '—'
+            row.insertCell(4).innerText = g.video_url || '—'
+            const actions = row.insertCell(5)
+            const delBtn = document.createElement('button')
+            delBtn.innerText = 'حذف'
+            delBtn.className = 'delete-btn'
+            delBtn.onclick = () => deleteGift(g.id)
+            actions.appendChild(delBtn)
+        }
+        document.querySelectorAll('.lucky-percent').forEach(inp => {
+            inp.onchange = async () => { await db('update', 'gifts', { id: inp.dataset.id }, { lucky_percent: parseInt(inp.value) }) }
+        })
+    }
+    async function deleteGift(id) {
+        if (confirm('حذف الهدية؟')) { await db('delete', 'gifts', { id }); loadGifts() }
+    }
+    document.getElementById('add-gift').onclick = async () => {
+        const name = document.getElementById('gift-name').value
+        const price = parseInt(document.getElementById('gift-price').value)
+        const isLucky = document.getElementById('gift-is-lucky').checked
+        const video = document.getElementById('gift-video').value
+        if (!name || !price) { alert('اسم الهدية والسعر مطلوبان'); return }
+        await db('insert', 'gifts', null, { name, price_coins: price, is_lucky: isLucky, lucky_percent: 10, video_url: video })
+        loadGifts()
+    }
+
+    async function loadSettings() {
+        const result = await db('select', 'settings', null, '*')
+        for (const s of (result.data || [])) {
+            if (s.key === 'daily_luck_percent') document.getElementById('daily-luck').value = s.value
+            if (s.key === 'slot_machine_luck_percent') document.getElementById('slot-luck').value = s.value
+            if (s.key === 'max_daily_win_coins') document.getElementById('max-daily-win').value = s.value
+            if (s.key === 'cashback_percent') document.getElementById('cashback-percent').value = s.value
+            if (s.key === 'roulette_luck') document.getElementById('roulette-luck').value = s.value
+        }
+    }
+    async function saveSetting(key, value) { await db('upsert', 'settings', null, { key, value }) }
+    document.getElementById('save-daily-luck').onclick = () => saveSetting('daily_luck_percent', document.getElementById('daily-luck').value).then(() => alert('تم الحفظ'))
+    document.getElementById('save-slot-luck').onclick = () => saveSetting('slot_machine_luck_percent', document.getElementById('slot-luck').value).then(() => alert('تم الحفظ'))
+    document.getElementById('save-max-win').onclick = () => saveSetting('max_daily_win_coins', document.getElementById('max-daily-win').value).then(() => alert('تم الحفظ'))
+    document.getElementById('save-cashback').onclick = () => saveSetting('cashback_percent', document.getElementById('cashback-percent').value).then(() => alert('تم الحفظ'))
+    document.getElementById('save-roulette').onclick = () => saveSetting('roulette_luck', document.getElementById('roulette-luck').value).then(() => alert('تم الحفظ'))
+
+    async function loadReports() {
+        const r = await fetch('/api/admin/reports', { method: 'POST' })
+        const d = await r.json()
+        document.getElementById('top-hosts').innerHTML = d.topHosts.length ? '<ul>' + d.topHosts.map(h => `<li>${h.username}: ${h.diamonds} ماس</li>`).join('') + '</ul>' : '<p>لا يوجد مضيفون بعد</p>'
+        document.getElementById('top-agents').innerHTML = `<p>عدد وكلاء الشحن: ${d.agentsCount}</p>`
+        document.getElementById('total-recharged').innerText = d.totalRecharged + ' كوينز'
+        document.getElementById('total-gifts-sent').innerText = d.giftsCount + ' هدية'
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'))
+            btn.classList.add('active')
+            document.getElementById(btn.dataset.tab).classList.add('active')
+            if (btn.dataset.tab === 'users') loadUsers(document.getElementById('search-user').value)
+            if (btn.dataset.tab === 'agents') loadAgencies()
+            if (btn.dataset.tab === 'gifts') loadGifts()
+            if (btn.dataset.tab === 'reports') loadReports()
+            if (btn.dataset.tab === 'roles') loadRolesPermissions()
+        })
+    })
+    document.getElementById('search-btn').onclick = () => loadUsers(document.getElementById('search-user').value)
+    document.getElementById('reset-search').onclick = () => { document.getElementById('search-user').value = ''; loadUsers() }
+    document.getElementById('save-roles-permissions').onclick = saveAllRolesPermissions
+    document.getElementById('logout').onclick = async () => { await supabase.auth.signOut(); localStorage.clear(); window.location.href = 'index.html' }
+
+    checkAdmin()
+</script>
+</body>
+</html>
