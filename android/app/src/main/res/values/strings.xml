@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ZAFFA LIVE</string>
+    <string name="title_activity_main">ZAFFA LIVE</string>
+    <string name="package_name">com.zaffa.live</string>
+    <string name="custom_url_scheme">com.zaffa.live</string>
+</resources>
