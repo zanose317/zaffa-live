@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
 
-dotenv.config()
+dotenv.config({ quiet: true })
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -14,8 +14,14 @@ const PORT = process.env.PORT || 3000
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 
+console.log('Starting ZAFFA LIVE...')
+console.log('PORT:', PORT)
+console.log('SUPABASE_URL set:', !!SUPABASE_URL)
+console.log('SUPABASE_SERVICE_KEY set:', !!SUPABASE_SERVICE_KEY)
+
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
   console.error('❌ يجب تعيين SUPABASE_URL و SUPABASE_SERVICE_KEY في متغيرات البيئة')
+  console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('SUPABASE')).join(', '))
   process.exit(1)
 }
 
@@ -24,6 +30,8 @@ const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 app.use(express.static(__dirname))
 app.use('/node_modules', express.static(path.join(__dirname, 'node_modules')))
 app.use(express.json())
+
+app.get('/health', (req, res) => res.send('OK'))
 
 app.post('/api/signup', async (req, res) => {
   const { email, password } = req.body
