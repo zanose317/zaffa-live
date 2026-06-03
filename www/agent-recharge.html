@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>ÙˆÙƒÙŠÙ„ Ø§Ù„Ø´Ø­Ù† - ZAFFA LIVE</title>
+    <title>وكيل الشحن - ZAFFA LIVE</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0e0e1a; color: #eee; padding: 20px; direction: rtl; }
         .container { max-width: 800px; margin: auto; background: #1e1e2f; border-radius: 30px; padding: 20px; }
@@ -13,19 +13,21 @@
 </head>
 <body>
 <div class="container">
-    <h2>ðŸ’° ÙˆÙƒÙŠÙ„ Ø§Ù„Ø´Ø­Ù† - ZAFFA LIVE</h2>
-    <button class="logout" id="logout">ØªØ³Ø¬ÙŠÙ„ Ø®Ø±ÙˆØ¬</button>
+    <h2>💰 وكيل الشحن - ZAFFA LIVE</h2>
+    <button class="logout" id="logout">تسجيل خروج</button>
     <div class="section">
-        <h3>ðŸ‘¥ Ø´Ø­Ù† Ù…Ø³ØªØ®Ø¯Ù…</h3>
-        <input type="text" id="user-name" placeholder="Ø§Ø³Ù… Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…">
-        <input type="number" id="coins-amount" placeholder="Ø¹Ø¯Ø¯ Ø§Ù„ÙƒÙˆÙŠÙ†Ø²">
-        <button id="recharge-user">Ø´Ø­Ù† Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…</button>
+        <h3>👥 شحن مستخدم</h3>
+        <input type="text" id="user-name" placeholder="اسم المستخدم">
+        <input type="number" id="coins-amount" placeholder="عدد الكوينز">
+        <button id="recharge-user">شحن المستخدم</button>
         <p id="result"></p>
     </div>
 </div>
 
-<script src="supabase-js.js"></script><script src="supabaseClient.js"></script><script type="module">
-    const supabase = window.supabaseClient; const API_BASE = window.API_BASE
+<script src="supabase-js.js"></script>
+<script src="supabaseClient.js"></script>
+<script type="module">
+    var supabase = window.supabaseClient; var API_BASE = window.API_BASE
 
     async function db(action, table, match, data, opts = {}) {
         const res = await fetch(API_BASE + '/api/admin', {
@@ -43,22 +45,21 @@
         const username = document.getElementById('user-name').value.trim()
         const amount = parseInt(document.getElementById('coins-amount').value)
         if (!username || isNaN(amount) || amount <= 0) {
-            document.getElementById('result').innerText = 'Ø¨ÙŠØ§Ù†Ø§Øª ØºÙŠØ± ØµØ­ÙŠØ­Ø©'
+            document.getElementById('result').innerText = 'بيانات غير صحيحة'
             return
         }
         const { data: user } = await db('select', 'users', { username }, 'id, coins, total_recharged', { single: true })
         if (!user) {
-            document.getElementById('result').innerText = 'Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯'
+            document.getElementById('result').innerText = 'المستخدم غير موجود'
             return
         }
         const newCoins = user.coins + amount
         await db('update', 'users', { id: user.id }, { coins: newCoins, total_recharged: (user.total_recharged || 0) + amount })
         await db('insert', 'transactions', null, { from_user: currentAgent.id, to_user: user.id, amount, type: 'recharge' })
-        document.getElementById('result').innerHTML = `âœ… ØªÙ… Ø´Ø­Ù† ${amount} ÙƒÙˆÙŠÙ†Ø² Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù… ${username}`
+        document.getElementById('result').innerHTML = `✅ تم شحن ${amount} كوينز للمستخدم ${username}`
     }
 
     document.getElementById('logout').onclick = async () => { await supabase.auth.signOut(); localStorage.clear(); window.location.href = 'index.html' }
 </script>
 </body>
 </html>
-

@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>ÙˆÙƒÙŠÙ„ Ø§Ù„Ù…Ø¶ÙŠÙÙŠÙ† - ZAFFA LIVE</title>
+    <title>وكيل المضيفين - ZAFFA LIVE</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0e0e1a; color: #eee; padding: 20px; direction: rtl; }
         .container { max-width: 1000px; margin: auto; background: #1e1e2f; border-radius: 30px; padding: 20px; }
@@ -14,18 +14,20 @@
 </head>
 <body>
 <div class="container">
-    <h2>ðŸ¤ ÙˆÙƒÙŠÙ„ Ø§Ù„Ù…Ø¶ÙŠÙÙŠÙ† - ZAFFA LIVE</h2>
-    <button class="logout" id="logout">ØªØ³Ø¬ÙŠÙ„ Ø®Ø±ÙˆØ¬</button>
+    <h2>🤝 وكيل المضيفين - ZAFFA LIVE</h2>
+    <button class="logout" id="logout">تسجيل خروج</button>
     <div class="section">
-        <h3>ðŸ“‹ ÙˆÙƒØ§Ù„ØªÙŠ</h3>
+        <h3>📋 وكالتي</h3>
         <div id="agency-info"></div>
-        <h3>ðŸ‘¥ Ø§Ù„Ù…Ø¶ÙŠÙÙˆÙ† Ø§Ù„ØªØ§Ø¨Ø¹ÙˆÙ†</h3>
-        <table id="hosts-table"><thead><tr><th>Ø§Ø³Ù… Ø§Ù„Ù…Ø¶ÙŠÙ</th><th>Ø§Ù„Ù…Ø§Ø³ Ø§Ù„Ù…Ø¬Ù…Ø¹</th><th>Ø¹Ù…ÙˆÙ„ØªÙŠ</th></tr></thead><tbody></tbody></table>
+        <h3>👥 المضيفون التابعون</h3>
+        <table id="hosts-table"><thead><tr><th>اسم المضيف</th><th>الماس المجمع</th><th>عمولتي</th></tr></thead><tbody></tbody></table>
     </div>
 </div>
 
-<script src="supabase-js.js"></script><script src="supabaseClient.js"></script><script type="module">
-    const supabase = window.supabaseClient; const API_BASE = window.API_BASE
+<script src="supabase-js.js"></script>
+<script src="supabaseClient.js"></script>
+<script type="module">
+    var supabase = window.supabaseClient; var API_BASE = window.API_BASE
 
     async function db(action, table, match, data, opts = {}) {
         const res = await fetch(API_BASE + '/api/admin', {
@@ -42,14 +44,14 @@
     async function loadAgency() {
         const { data: agency } = await db('select', 'host_agencies', { agent_id: currentAgent.id }, '*', { single: true })
         if (!agency) {
-            document.getElementById('agency-info').innerHTML = '<p>Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ ÙˆÙƒØ§Ù„Ø© Ø¨Ø¹Ø¯. ØªÙˆØ§ØµÙ„ Ù…Ø¹ Ø§Ù„Ø£Ø¯Ù…Ù† Ù„Ø¥Ù†Ø´Ø§Ø¡ ÙˆÙƒØ§Ù„Ø© Ù„Ùƒ.</p>'
+            document.getElementById('agency-info').innerHTML = '<p>ليس لديك وكالة بعد. تواصل مع الأدمن لإنشاء وكالة لك.</p>'
             return
         }
-        document.getElementById('agency-info').innerHTML = `<p>Ø§Ø³Ù… Ø§Ù„ÙˆÙƒØ§Ù„Ø©: ${agency.agency_name} | Ù†Ø³Ø¨Ø© Ø§Ù„Ø¹Ù…ÙˆÙ„Ø©: ${agency.commission_percent}%</p>`
+        document.getElementById('agency-info').innerHTML = `<p>اسم الوكالة: ${agency.agency_name} | نسبة العمولة: ${agency.commission_percent}%</p>`
         const { data: agencyHosts } = await db('select', 'agency_hosts', { agency_id: agency.id }, 'host_id')
         const hostIds = (agencyHosts || []).map(h => h.host_id)
         if (hostIds.length === 0) {
-            document.querySelector('#hosts-table tbody').innerHTML = '<tr><td colspan="3">Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ù…Ø¶ÙŠÙÙˆÙ† Ø¨Ø¹Ø¯</td></tr>'
+            document.querySelector('#hosts-table tbody').innerHTML = '<tr><td colspan="3">لا يوجد مضيفون بعد</td></tr>'
             return
         }
         const { data: users } = await db('select', 'users', null, 'id, username, diamonds')
@@ -60,7 +62,7 @@
             const row = tbody.insertRow()
             row.insertCell(0).innerText = host.username
             row.insertCell(1).innerText = host.diamonds
-            row.insertCell(2).innerText = `(ØªØ­ØªØ³Ø¨ ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹ Ù…Ø¹ ÙƒÙ„ Ù‡Ø¯ÙŠØ©)`
+            row.insertCell(2).innerText = `(تحتسب تلقائياً مع كل هدية)`
         }
     }
 
@@ -69,4 +71,3 @@
 </script>
 </body>
 </html>
-
