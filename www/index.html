@@ -33,11 +33,6 @@
 <script src="lang.js"></script>
 <script>
 (function() {
-  if (typeof supabaseClient === 'undefined') {
-    document.getElementById('error-msg').innerText = 'JS Error: supabase not loaded';
-    return;
-  }
-
   var isLogin = true;
   var formTitle = document.getElementById('form-title');
   var submitBtn = document.getElementById('submit-btn');
@@ -47,12 +42,15 @@
   var passwordInput = document.getElementById('password');
   var langBtn = document.getElementById('lang-btn');
 
-  langBtn.textContent = t ? t('switchLang') : 'English';
-  formTitle.textContent = t ? t('loginTitle') : 'تسجيل الدخول';
-  emailInput.placeholder = t ? t('email') : 'البريد الإلكتروني';
-  passwordInput.placeholder = t ? t('password') : 'كلمة المرور';
-  submitBtn.textContent = t ? t('loginBtn') : 'دخول';
-  toggleLink.textContent = t ? t('noAccount') : 'ليس لديك حساب؟ سجل الآن';
+  function setTexts() {
+    langBtn.textContent = t ? t('switchLang') : 'English';
+    formTitle.textContent = isLogin ? (t ? t('loginTitle') : 'تسجيل الدخول') : (t ? t('signupTitle') : 'إنشاء حساب جديد');
+    emailInput.placeholder = t ? t('email') : 'البريد الإلكتروني';
+    passwordInput.placeholder = t ? t('password') : 'كلمة المرور';
+    submitBtn.textContent = isLogin ? (t ? t('loginBtn') : 'دخول') : (t ? t('signupBtn') : 'تسجيل');
+    toggleLink.textContent = isLogin ? (t ? t('noAccount') : 'ليس لديك حساب؟ سجل الآن') : (t ? t('hasAccount') : 'لديك حساب؟ سجل دخول');
+  }
+  setTexts();
 
   function showError(msg) { errorMsg.innerText = msg; setTimeout(function() { errorMsg.innerText = ''; }, 3000); }
 
@@ -68,16 +66,16 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: result.data.user.id })
-        }).then(function(r) { return r.json(); }).then(function(data) {
-          if (data.error) { showError(data.error); return; }
-          localStorage.setItem('current_user', JSON.stringify(data.profile));
-          var role = data.profile.role;
+        }).then(function(r) { return r.json(); }).then(function(profileData) {
+          if (profileData.error) { showError(profileData.error); return; }
+          localStorage.setItem('current_user', JSON.stringify(profileData.profile));
+          var role = profileData.profile.role;
           if (role === 'admin') location.href = 'admin-dashboard.html';
           else if (role === 'recharge_agent') location.href = 'agent-recharge.html';
           else if (role === 'host_agent') location.href = 'agent-host.html';
           else if (role === 'host') location.href = 'host-dashboard.html';
           else location.href = 'user-dashboard.html';
-        });
+        }).catch(function(e) { showError('Connection error'); });
       });
     } else {
       fetch(API_BASE + '/api/signup', {
@@ -88,18 +86,14 @@
         if (data.error) { showError(data.error); return; }
         alert(t ? t('created') : 'تم إنشاء الحساب، سجل دخول الآن');
         isLogin = true;
-        formTitle.textContent = t ? t('loginTitle') : 'تسجيل الدخول';
-        submitBtn.textContent = t ? t('loginBtn') : 'دخول';
-        toggleLink.textContent = t ? t('noAccount') : 'ليس لديك حساب؟ سجل الآن';
-      });
+        setTexts();
+      }).catch(function(e) { showError('Connection error'); });
     }
   };
 
   toggleLink.onclick = function() {
     isLogin = !isLogin;
-    formTitle.textContent = isLogin ? (t ? t('loginTitle') : 'تسجيل الدخول') : (t ? t('signupTitle') : 'إنشاء حساب جديد');
-    submitBtn.textContent = isLogin ? (t ? t('loginBtn') : 'دخول') : (t ? t('signupBtn') : 'تسجيل');
-    toggleLink.textContent = isLogin ? (t ? t('noAccount') : 'ليس لديك حساب؟ سجل الآن') : (t ? t('hasAccount') : 'لديك حساب؟ سجل دخول');
+    setTexts();
   };
 })();
 </script>
