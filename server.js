@@ -124,7 +124,7 @@ if (supabaseAdmin) {
     res.json({ success: true, coins: newCoins + luckyWin, luckyWin })
   })
 
-  const ALLOWED_TABLES = ['users', 'gifts', 'settings', 'transactions', 'host_agencies', 'agency_hosts', 'roles_permissions', 'withdrawals']
+  const ALLOWED_TABLES = ['users', 'gifts', 'settings', 'transactions', 'host_agencies', 'agency_hosts', 'roles_permissions', 'withdrawals', 'vip_frames']
 
   app.post('/api/admin', async (req, res) => {
     const { action, table, match, data: payload, order, limit, single, count, or: orCondition } = req.body
@@ -165,6 +165,20 @@ if (supabaseAdmin) {
     const { data: recharges } = await supabaseAdmin.from('transactions').select('amount').eq('type', 'recharge')
     const { count: giftsCount } = await supabaseAdmin.from('transactions').select('*', { count: 'exact', head: true }).eq('type', 'gift')
     res.json({ topHosts: topHosts || [], agentsCount: agents.length, totalRecharged: recharges.reduce((a, b) => a + (b.amount || 0), 0), giftsCount: giftsCount || 0 })
+  })
+
+  const multer = require('multer')
+  const upload = multer({ storage: multer.memoryStorage() })
+  
+  app.post('/api/upload-avatar', upload.single('avatar'), async (req, res) => {
+    const { userId } = req.body
+    if (!req.file) return res.status(400).json({ error: 'No file' })
+    const fileName = `${userId}_${Date.now()}.jpg`
+    const { error } = await supabaseAdmin.storage.from('avatars').upload(fileName, req.file.buffer, { contentType: 'image/jpeg', upsert: true })
+    if (error) return res.status(400).json({ error: error.message })
+    const { data: urlData } = supabaseAdmin.storage.from('avatars').getPublicUrl(fileName)
+    await supabaseAdmin.from('users').update({ avatar_url: urlData.publicUrl }).eq('id', userId)
+    res.json({ url: urlData.publicUrl })
   })
 } else {
   console.log('API routes disabled - missing env vars')
