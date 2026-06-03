@@ -3,6 +3,14 @@ apply plugin: 'com.android.application'
 android {
     namespace = "com.zaffa.live"
     compileSdk = rootProject.ext.compileSdkVersion
+    signingConfigs {
+        release {
+            storeFile file("zaffa.keystore")
+            storePassword "123456"
+            keyAlias "zaffa"
+            keyPassword "123456"
+        }
+    }
     defaultConfig {
         applicationId "com.zaffa.live"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -18,6 +26,7 @@ android {
     }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
