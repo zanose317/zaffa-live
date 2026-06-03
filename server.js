@@ -8,6 +8,14 @@ dotenv.config({ quiet: true })
 const app = express()
 const PORT = process.env.PORT || 3000
 
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, apikey')
+  if (req.method === 'OPTIONS') return res.sendStatus(200)
+  next()
+})
+
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 
