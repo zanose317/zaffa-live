@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول - ZAFFA LIVE</title>
+    <title>ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„ - ZAFFA LIVE</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(145deg, #0b0b2b, #1a1a3a); color: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
@@ -17,24 +17,18 @@
 </head>
 <body>
 <div class="card">
-    <h2>✨ ZAFFA LIVE ✨</h2>
-    <h3 id="form-title">تسجيل الدخول</h3>
-    <input type="email" id="email" placeholder="البريد الإلكتروني">
-    <input type="password" id="password" placeholder="كلمة المرور">
-    <button id="submit-btn">دخول</button>
-    <div class="toggle" id="toggle-link">ليس لديك حساب؟ سجل الآن</div>
+    <h2>âœ¨ ZAFFA LIVE âœ¨</h2>
+    <h3 id="form-title">ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„</h3>
+    <input type="email" id="email" placeholder="Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ">
+    <input type="password" id="password" placeholder="ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ±">
+    <button id="submit-btn">Ø¯Ø®ÙˆÙ„</button>
+    <div class="toggle" id="toggle-link">Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø­Ø³Ø§Ø¨ØŸ Ø³Ø¬Ù„ Ø§Ù„Ø¢Ù†</div>
     <div class="error" id="error-msg"></div>
 </div>
 
-<script type="importmap">
-    {
-      "imports": {
-        "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2"
-      }
-    }
-</script>
-<script type="module">
-    import { supabase, API_BASE } from './supabaseClient.js'
+
+<script src="supabase-js.js"></script><script src="supabaseClient.js"></script><script type="module">
+    const supabase = window.supabaseClient; const API_BASE = window.API_BASE
 
     let isLogin = true
     const formTitle = document.getElementById('form-title')
@@ -49,7 +43,7 @@
     submitBtn.addEventListener('click', async () => {
         const email = emailInput.value.trim()
         const password = passwordInput.value.trim()
-        if (!email || !password) { showError('املأ الحقول'); return; }
+        if (!email || !password) { showError('Ø§Ù…Ù„Ø£ Ø§Ù„Ø­Ù‚ÙˆÙ„'); return; }
 
         if (isLogin) {
             const { data, error } = await supabase.auth.signInWithPassword({ email, password })
@@ -75,20 +69,21 @@
             })
             const result = await res.json()
             if (result.error) { showError(result.error); return; }
-            alert('تم إنشاء الحساب، سجل دخول الآن')
+            alert('ØªÙ… Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ø­Ø³Ø§Ø¨ØŒ Ø³Ø¬Ù„ Ø¯Ø®ÙˆÙ„ Ø§Ù„Ø¢Ù†')
             isLogin = true
-            formTitle.innerText = 'تسجيل الدخول'
-            submitBtn.innerText = 'دخول'
-            toggleLink.innerText = 'ليس لديك حساب؟ سجل الآن'
+            formTitle.innerText = 'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„'
+            submitBtn.innerText = 'Ø¯Ø®ÙˆÙ„'
+            toggleLink.innerText = 'Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø­Ø³Ø§Ø¨ØŸ Ø³Ø¬Ù„ Ø§Ù„Ø¢Ù†'
         }
     })
 
     toggleLink.addEventListener('click', () => {
         isLogin = !isLogin
-        formTitle.innerText = isLogin ? 'تسجيل الدخول' : 'إنشاء حساب جديد'
-        submitBtn.innerText = isLogin ? 'دخول' : 'تسجيل'
-        toggleLink.innerText = isLogin ? 'ليس لديك حساب؟ سجل الآن' : 'لديك حساب؟ سجل دخول'
+        formTitle.innerText = isLogin ? 'ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„' : 'Ø¥Ù†Ø´Ø§Ø¡ Ø­Ø³Ø§Ø¨ Ø¬Ø¯ÙŠØ¯'
+        submitBtn.innerText = isLogin ? 'Ø¯Ø®ÙˆÙ„' : 'ØªØ³Ø¬ÙŠÙ„'
+        toggleLink.innerText = isLogin ? 'Ù„ÙŠØ³ Ù„Ø¯ÙŠÙƒ Ø­Ø³Ø§Ø¨ØŸ Ø³Ø¬Ù„ Ø§Ù„Ø¢Ù†' : 'Ù„Ø¯ÙŠÙƒ Ø­Ø³Ø§Ø¨ØŸ Ø³Ø¬Ù„ Ø¯Ø®ÙˆÙ„'
     })
 </script>
 </body>
 </html>
+

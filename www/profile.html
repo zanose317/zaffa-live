@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>بروفايلي - ZAFFA LIVE</title>
+    <title>Ø¨Ø±ÙˆÙØ§ÙŠÙ„ÙŠ - ZAFFA LIVE</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0e0e1a; color: #eee; display: flex; justify-content: center; align-items: center; height: 100vh; }
         .card { background: #1e1e2f; padding: 30px; border-radius: 30px; width: 350px; text-align: center; }
@@ -11,21 +11,19 @@
 </head>
 <body>
 <div class="card">
-    <h2>👤 بروفايلي</h2>
-    <p><strong>اسم المستخدم:</strong> <span id="username"></span></p>
-    <p><strong>البريد:</strong> <span id="email"></span></p>
-    <p><strong>رصيد الكوينز:</strong> <span id="coins"></span></p>
-    <p><strong>رصيد الماس:</strong> <span id="diamonds"></span></p>
-    <p><strong>مستوى VIP:</strong> <span id="vip"></span></p>
-    <p><strong>الدور:</strong> <span id="role"></span></p>
-    <p><strong>إجمالي ما شحنته:</strong> <span id="totalRecharged"></span></p>
-    <button id="back">رجوع</button>
+    <h2>ðŸ‘¤ Ø¨Ø±ÙˆÙØ§ÙŠÙ„ÙŠ</h2>
+    <p><strong>Ø§Ø³Ù… Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…:</strong> <span id="username"></span></p>
+    <p><strong>Ø§Ù„Ø¨Ø±ÙŠØ¯:</strong> <span id="email"></span></p>
+    <p><strong>Ø±ØµÙŠØ¯ Ø§Ù„ÙƒÙˆÙŠÙ†Ø²:</strong> <span id="coins"></span></p>
+    <p><strong>Ø±ØµÙŠØ¯ Ø§Ù„Ù…Ø§Ø³:</strong> <span id="diamonds"></span></p>
+    <p><strong>Ù…Ø³ØªÙˆÙ‰ VIP:</strong> <span id="vip"></span></p>
+    <p><strong>Ø§Ù„Ø¯ÙˆØ±:</strong> <span id="role"></span></p>
+    <p><strong>Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ù…Ø§ Ø´Ø­Ù†ØªÙ‡:</strong> <span id="totalRecharged"></span></p>
+    <button id="back">Ø±Ø¬ÙˆØ¹</button>
 </div>
-<script type="importmap">
-    { "imports": { "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2" } }
-</script>
-<script type="module">
-    import { supabase, API_BASE } from './supabaseClient.js'
+
+<script src="supabase-js.js"></script><script src="supabaseClient.js"></script><script type="module">
+    const supabase = window.supabaseClient; const API_BASE = window.API_BASE
     let user = JSON.parse(localStorage.getItem('current_user'))
     if (!user) window.location.href = 'index.html'
     async function loadProfile() {
@@ -58,3 +56,4 @@
 </script>
 </body>
 </html>
+

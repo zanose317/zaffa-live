@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة المستخدم - ZAFFA LIVE</title>
+    <title>Ù„ÙˆØ­Ø© Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… - ZAFFA LIVE</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0e0e1a; color: #eee; padding: 20px; direction: rtl; }
@@ -20,39 +20,37 @@
 </head>
 <body>
 <div class="container">
-    <h2>🎤 لوحة المستخدم - ZAFFA LIVE</h2>
+    <h2>ðŸŽ¤ Ù„ÙˆØ­Ø© Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… - ZAFFA LIVE</h2>
     <div class="user-info" id="user-info"></div>
-    <button class="logout" id="logout">تسجيل خروج</button>
+    <button class="logout" id="logout">ØªØ³Ø¬ÙŠÙ„ Ø®Ø±ÙˆØ¬</button>
 
     <div class="section">
-        <h3>💰 شحن الكوينز عبر وكيل</h3>
-        <input type="text" id="agent-username" placeholder="اسم وكيل الشحن">
-        <input type="number" id="recharge-amount" placeholder="عدد الكوينز">
-        <button id="recharge-by-agent">شحن</button>
+        <h3>ðŸ’° Ø´Ø­Ù† Ø§Ù„ÙƒÙˆÙŠÙ†Ø² Ø¹Ø¨Ø± ÙˆÙƒÙŠÙ„</h3>
+        <input type="text" id="agent-username" placeholder="Ø§Ø³Ù… ÙˆÙƒÙŠÙ„ Ø§Ù„Ø´Ø­Ù†">
+        <input type="number" id="recharge-amount" placeholder="Ø¹Ø¯Ø¯ Ø§Ù„ÙƒÙˆÙŠÙ†Ø²">
+        <button id="recharge-by-agent">Ø´Ø­Ù†</button>
         <p id="recharge-result"></p>
     </div>
 
     <div class="section">
-        <h3>🎁 إرسال هدية لمضيف</h3>
-        <input type="text" id="host-name" placeholder="اسم المضيف">
+        <h3>ðŸŽ Ø¥Ø±Ø³Ø§Ù„ Ù‡Ø¯ÙŠØ© Ù„Ù…Ø¶ÙŠÙ</h3>
+        <input type="text" id="host-name" placeholder="Ø§Ø³Ù… Ø§Ù„Ù…Ø¶ÙŠÙ">
         <select id="gift-select"></select>
-        <button id="send-gift">إرسال الهدية</button>
+        <button id="send-gift">Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„Ù‡Ø¯ÙŠØ©</button>
         <p id="gift-result"></p>
     </div>
 
     <div class="section">
-        <h3>🎮 الألعاب والغرف</h3>
-        <button id="open-game">🎰 لعبة فرعون</button>
-        <button id="open-room">🎙️ غرفة صوتية</button>
-        <button id="open-profile">👤 بروفايلي</button>
+        <h3>ðŸŽ® Ø§Ù„Ø£Ù„Ø¹Ø§Ø¨ ÙˆØ§Ù„ØºØ±Ù</h3>
+        <button id="open-game">ðŸŽ° Ù„Ø¹Ø¨Ø© ÙØ±Ø¹ÙˆÙ†</button>
+        <button id="open-room">ðŸŽ™ï¸ ØºØ±ÙØ© ØµÙˆØªÙŠØ©</button>
+        <button id="open-profile">ðŸ‘¤ Ø¨Ø±ÙˆÙØ§ÙŠÙ„ÙŠ</button>
     </div>
 </div>
 
-<script type="importmap">
-    { "imports": { "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2" } }
-</script>
-<script type="module">
-    import { supabase, API_BASE } from './supabaseClient.js'
+
+<script src="supabase-js.js"></script><script src="supabaseClient.js"></script><script type="module">
+    const supabase = window.supabaseClient; const API_BASE = window.API_BASE
     let currentUser = JSON.parse(localStorage.getItem('current_user'))
     if (!currentUser || currentUser.role !== 'user') window.location.href = 'index.html'
 
@@ -65,10 +63,10 @@
         const result = await res.json()
         if (result.profile) currentUser = result.profile
         document.getElementById('user-info').innerHTML = `
-            <div class="balance">👤 ${currentUser.username}</div>
-            <div class="balance">💰 كوينز: ${currentUser.coins}</div>
-            <div class="balance">💎 ماس: ${currentUser.diamonds}</div>
-            <div class="balance">⭐ VIP ${currentUser.vip_level || 1}</div>
+            <div class="balance">ðŸ‘¤ ${currentUser.username}</div>
+            <div class="balance">ðŸ’° ÙƒÙˆÙŠÙ†Ø²: ${currentUser.coins}</div>
+            <div class="balance">ðŸ’Ž Ù…Ø§Ø³: ${currentUser.diamonds}</div>
+            <div class="balance">â­ VIP ${currentUser.vip_level || 1}</div>
         `
         localStorage.setItem('current_user', JSON.stringify(currentUser))
     }
@@ -77,11 +75,11 @@
         const res = await fetch(API_BASE + '/api/gifts')
         const data = await res.json()
         const select = document.getElementById('gift-select')
-        select.innerHTML = '<option value="">اختر هدية</option>';
+        select.innerHTML = '<option value="">Ø§Ø®ØªØ± Ù‡Ø¯ÙŠØ©</option>';
         (data.gifts || []).forEach(g => {
             const option = document.createElement('option')
             option.value = g.id
-            option.textContent = `${g.name} (${g.price_coins} كوينز)`
+            option.textContent = `${g.name} (${g.price_coins} ÙƒÙˆÙŠÙ†Ø²)`
             select.appendChild(option)
         })
     }
@@ -90,7 +88,7 @@
         const agentName = document.getElementById('agent-username').value.trim()
         const amount = parseInt(document.getElementById('recharge-amount').value)
         const r = document.getElementById('recharge-result')
-        if (!agentName || isNaN(amount) || amount <= 0) { r.innerText = 'بيانات غير صحيحة'; return }
+        if (!agentName || isNaN(amount) || amount <= 0) { r.innerText = 'Ø¨ÙŠØ§Ù†Ø§Øª ØºÙŠØ± ØµØ­ÙŠØ­Ø©'; return }
         const res = await fetch(API_BASE + '/api/recharge', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -99,7 +97,7 @@
         const result = await res.json()
         if (result.error) { r.innerText = result.error; return }
         currentUser.coins = result.coins
-        r.innerText = `✅ تم شحن ${amount} كوينز بواسطة ${agentName}`
+        r.innerText = `âœ… ØªÙ… Ø´Ø­Ù† ${amount} ÙƒÙˆÙŠÙ†Ø² Ø¨ÙˆØ§Ø³Ø·Ø© ${agentName}`
         await updateUI()
     }
 
@@ -107,7 +105,7 @@
         const hostName = document.getElementById('host-name').value.trim()
         const giftId = document.getElementById('gift-select').value
         const r = document.getElementById('gift-result')
-        if (!hostName || !giftId) { r.innerText = 'اختر مضيف وهدية'; return }
+        if (!hostName || !giftId) { r.innerText = 'Ø§Ø®ØªØ± Ù…Ø¶ÙŠÙ ÙˆÙ‡Ø¯ÙŠØ©'; return }
         const res = await fetch(API_BASE + '/api/send-gift', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -117,9 +115,9 @@
         if (result.error) { r.innerText = result.error; return }
         currentUser.coins = result.coins
         if (result.luckyWin > 0) {
-            r.innerHTML = `<span class="success">🎉 فزت! ربحت ${result.luckyWin} كوينز إضافية من هدية الحظ 🎉</span>`
+            r.innerHTML = `<span class="success">ðŸŽ‰ ÙØ²Øª! Ø±Ø¨Ø­Øª ${result.luckyWin} ÙƒÙˆÙŠÙ†Ø² Ø¥Ø¶Ø§ÙÙŠØ© Ù…Ù† Ù‡Ø¯ÙŠØ© Ø§Ù„Ø­Ø¸ ðŸŽ‰</span>`
         } else {
-            r.innerHTML = `✅ تم إرسال الهدية للمضيف ${hostName}`
+            r.innerHTML = `âœ… ØªÙ… Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„Ù‡Ø¯ÙŠØ© Ù„Ù„Ù…Ø¶ÙŠÙ ${hostName}`
         }
         await updateUI()
     }
@@ -134,3 +132,4 @@
 </script>
 </body>
 </html>
+

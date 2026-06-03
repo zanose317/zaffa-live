@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة المضيف - ZAFFA LIVE</title>
+    <title>Ù„ÙˆØ­Ø© Ø§Ù„Ù…Ø¶ÙŠÙ - ZAFFA LIVE</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0e0e1a; color: #eee; padding: 20px; direction: rtl; }
         .container { max-width: 800px; margin: auto; background: #1e1e2f; border-radius: 30px; padding: 20px; }
@@ -14,26 +14,24 @@
 </head>
 <body>
 <div class="container">
-    <h2>🎙️ لوحة المضيف - ZAFFA LIVE</h2>
+    <h2>ðŸŽ™ï¸ Ù„ÙˆØ­Ø© Ø§Ù„Ù…Ø¶ÙŠÙ - ZAFFA LIVE</h2>
     <div class="user-info" id="host-info"></div>
-    <button class="logout" id="logout">تسجيل خروج</button>
+    <button class="logout" id="logout">ØªØ³Ø¬ÙŠÙ„ Ø®Ø±ÙˆØ¬</button>
     <div class="section">
-        <h3>💎 تحويل الماس إلى فلوس</h3>
-        <p>رصيد الماس الحالي: <strong id="diamonds-amount">0</strong></p>
-        <input type="number" id="withdraw-amount" placeholder="كم ماس تريد سحبه؟">
-        <button id="request-withdraw">تقديم طلب سحب</button>
+        <h3>ðŸ’Ž ØªØ­ÙˆÙŠÙ„ Ø§Ù„Ù…Ø§Ø³ Ø¥Ù„Ù‰ ÙÙ„ÙˆØ³</h3>
+        <p>Ø±ØµÙŠØ¯ Ø§Ù„Ù…Ø§Ø³ Ø§Ù„Ø­Ø§Ù„ÙŠ: <strong id="diamonds-amount">0</strong></p>
+        <input type="number" id="withdraw-amount" placeholder="ÙƒÙ… Ù…Ø§Ø³ ØªØ±ÙŠØ¯ Ø³Ø­Ø¨Ù‡ØŸ">
+        <button id="request-withdraw">ØªÙ‚Ø¯ÙŠÙ… Ø·Ù„Ø¨ Ø³Ø­Ø¨</button>
         <p id="withdraw-result"></p>
     </div>
     <div class="section">
-        <h3>📊 إحصائياتي</h3>
+        <h3>ðŸ“Š Ø¥Ø­ØµØ§Ø¦ÙŠØ§ØªÙŠ</h3>
         <div id="host-stats"></div>
     </div>
 </div>
-<script type="importmap">
-    { "imports": { "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2" } }
-</script>
-<script type="module">
-    import { supabase, API_BASE } from './supabaseClient.js'
+
+<script src="supabase-js.js"></script><script src="supabaseClient.js"></script><script type="module">
+    const supabase = window.supabaseClient; const API_BASE = window.API_BASE
 
     async function db(action, table, match, data, opts = {}) {
         const res = await fetch(API_BASE + '/api/admin', {
@@ -51,9 +49,9 @@
         const result = await db('select', 'users', { id: currentHost.id }, '*', { single: true })
         if (result.data) currentHost = result.data
         document.getElementById('host-info').innerHTML = `
-            <p>👤 ${currentHost.username}</p>
-            <p>💎 الماس: ${currentHost.diamonds}</p>
-            <p>⭐ VIP ${currentHost.vip_level || 1}</p>
+            <p>ðŸ‘¤ ${currentHost.username}</p>
+            <p>ðŸ’Ž Ø§Ù„Ù…Ø§Ø³: ${currentHost.diamonds}</p>
+            <p>â­ VIP ${currentHost.vip_level || 1}</p>
         `
         document.getElementById('diamonds-amount').innerText = currentHost.diamonds
         localStorage.setItem('current_user', JSON.stringify(currentHost))
@@ -62,20 +60,20 @@
     document.getElementById('request-withdraw').onclick = async () => {
         const amount = parseInt(document.getElementById('withdraw-amount').value)
         if (isNaN(amount) || amount <= 0 || amount > currentHost.diamonds) {
-            document.getElementById('withdraw-result').innerText = 'مبلغ غير صحيح'
+            document.getElementById('withdraw-result').innerText = 'Ù…Ø¨Ù„Øº ØºÙŠØ± ØµØ­ÙŠØ­'
             return
         }
         const usd = amount / 100
         await db('insert', 'withdrawals', null, { user_id: currentHost.id, amount_diamonds: amount, amount_usd: usd })
-        alert(`تم تقديم طلب سحب ${amount} ماس (${usd} دولار). سيتم مراجعته من قبل الأدمن.`)
-        document.getElementById('withdraw-result').innerText = 'تم إرسال الطلب'
+        alert(`ØªÙ… ØªÙ‚Ø¯ÙŠÙ… Ø·Ù„Ø¨ Ø³Ø­Ø¨ ${amount} Ù…Ø§Ø³ (${usd} Ø¯ÙˆÙ„Ø§Ø±). Ø³ÙŠØªÙ… Ù…Ø±Ø§Ø¬Ø¹ØªÙ‡ Ù…Ù† Ù‚Ø¨Ù„ Ø§Ù„Ø£Ø¯Ù…Ù†.`)
+        document.getElementById('withdraw-result').innerText = 'ØªÙ… Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„Ø·Ù„Ø¨'
     }
 
     async function loadStats() {
         const result = await db('select', 'transactions', { to_user: currentHost.id }, 'amount')
         const gifts = result.data || []
         const totalGifts = gifts.reduce((a, b) => a + b.amount, 0)
-        document.getElementById('host-stats').innerHTML = `<p>إجمالي الهدايا المستلمة: ${totalGifts} ماس</p>`
+        document.getElementById('host-stats').innerHTML = `<p>Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù‡Ø¯Ø§ÙŠØ§ Ø§Ù„Ù…Ø³ØªÙ„Ù…Ø©: ${totalGifts} Ù…Ø§Ø³</p>`
     }
 
     document.getElementById('logout').onclick = async () => { await supabase.auth.signOut(); localStorage.clear(); window.location.href = 'index.html' }
@@ -84,3 +82,4 @@
 </script>
 </body>
 </html>
+
