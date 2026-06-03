@@ -42,6 +42,28 @@
   var passwordInput = document.getElementById('password');
   var langBtn = document.getElementById('lang-btn');
 
+  // Check if already logged in
+  supabaseClient.auth.getSession().then(function(result) {
+    if (result.data && result.data.session) {
+      var userId = result.data.session.user.id;
+      fetch(API_BASE + '/api/get-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userId })
+      }).then(function(r) { return r.json(); }).then(function(profileData) {
+        if (profileData.profile) {
+          localStorage.setItem('current_user', JSON.stringify(profileData.profile));
+          var role = profileData.profile.role;
+          if (role === 'admin') location.href = 'admin-dashboard.html';
+          else if (role === 'recharge_agent') location.href = 'agent-recharge.html';
+          else if (role === 'host_agent') location.href = 'agent-host.html';
+          else if (role === 'host') location.href = 'host-dashboard.html';
+          else location.href = 'user-dashboard.html';
+        }
+      });
+    }
+  });
+
   function setTexts() {
     langBtn.textContent = t ? t('switchLang') : 'English';
     formTitle.textContent = isLogin ? (t ? t('loginTitle') : 'تسجيل الدخول') : (t ? t('signupTitle') : 'إنشاء حساب جديد');
