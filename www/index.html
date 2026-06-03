@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول - ZAFFA LIVE</title>
+    <title>ZAFFA LIVE</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(145deg, #0b0b2b, #1a1a3a); color: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
@@ -13,87 +13,95 @@
         button { background: #ffb347; color: #1a1a2e; font-weight: bold; cursor: pointer; }
         .toggle { margin-top: 15px; font-size: 0.8rem; cursor: pointer; color: #ddd; }
         .error { color: #ff6b6b; margin-top: 10px; }
+        #lang-btn { position:fixed;top:10px;right:10px;z-index:999;width:auto;padding:5px 15px;font-size:0.7rem;background:#333;color:#fff;border-radius:20px;border:1px solid #555; }
     </style>
-  <script src="lang.js"></script>
 </head>
 <body>
+<button onclick="toggleLang()" id="lang-btn"></button>
 <div class="card">
     <h2>✨ ZAFFA LIVE ✨</h2>
-    <button onclick="toggleLang()" style="position:absolute;top:10px;right:10px;width:auto;padding:5px 15px;font-size:0.8rem;background:#333;color:#fff;border-radius:20px;" id="lang-toggle"></button>
     <h3 id="form-title"></h3>
-    <input type="email" id="email" id="email-placeholder-id" placeholder="">
-    <input type="password" id="password" id="pass-placeholder-id" placeholder="">
+    <input type="email" id="email" placeholder="">
+    <input type="password" id="password" placeholder="">
     <button id="submit-btn"></button>
     <div class="toggle" id="toggle-link"></div>
     <div class="error" id="error-msg"></div>
 </div>
 
-
 <script src="supabase-js.js"></script>
 <script src="supabaseClient.js"></script>
-<script type="module">
-    var supabase = window.supabaseClient; var API_BASE = window.API_BASE
+<script src="lang.js"></script>
+<script>
+(function() {
+  if (typeof supabaseClient === 'undefined') {
+    document.getElementById('error-msg').innerText = 'JS Error: supabase not loaded';
+    return;
+  }
 
-    let isLogin = true
-    const formTitle = document.getElementById('form-title')
-    const submitBtn = document.getElementById('submit-btn')
-    const toggleLink = document.getElementById('toggle-link')
-    const errorMsg = document.getElementById('error-msg')
-    const emailInput = document.getElementById('email')
-    const passwordInput = document.getElementById('password')
+  var isLogin = true;
+  var formTitle = document.getElementById('form-title');
+  var submitBtn = document.getElementById('submit-btn');
+  var toggleLink = document.getElementById('toggle-link');
+  var errorMsg = document.getElementById('error-msg');
+  var emailInput = document.getElementById('email');
+  var passwordInput = document.getElementById('password');
+  var langBtn = document.getElementById('lang-btn');
 
-    document.getElementById("lang-toggle").textContent = t("switchLang");
-    formTitle.textContent = t("loginTitle");
-    emailInput.placeholder = t("email");
-    passwordInput.placeholder = t("password");
-    submitBtn.textContent = t("loginBtn");
-    toggleLink.textContent = t("noAccount");
+  langBtn.textContent = t ? t('switchLang') : 'English';
+  formTitle.textContent = t ? t('loginTitle') : 'تسجيل الدخول';
+  emailInput.placeholder = t ? t('email') : 'البريد الإلكتروني';
+  passwordInput.placeholder = t ? t('password') : 'كلمة المرور';
+  submitBtn.textContent = t ? t('loginBtn') : 'دخول';
+  toggleLink.textContent = t ? t('noAccount') : 'ليس لديك حساب؟ سجل الآن';
 
-    function showError(msg) { errorMsg.innerText = msg; setTimeout(() => errorMsg.innerText = '', 3000); }
+  function showError(msg) { errorMsg.innerText = msg; setTimeout(function() { errorMsg.innerText = ''; }, 3000); }
 
-    submitBtn.addEventListener('click', async () => {
-        const email = emailInput.value.trim()
-        const password = passwordInput.value.trim()
-        if (!email || !password) { showError(t('fillFields')); return; }
+  submitBtn.onclick = function() {
+    var email = emailInput.value.trim();
+    var password = passwordInput.value.trim();
+    if (!email || !password) { showError(t ? t('fillFields') : 'املأ الحقول'); return; }
 
-        if (isLogin) {
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-            if (error) { showError(error.message); return; }
-            const res = await fetch(API_BASE + '/api/get-profile', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: data.user.id })
-            })
-            const result = await res.json()
-            if (result.error) { showError(result.error); return; }
-            localStorage.setItem('current_user', JSON.stringify(result.profile))
-            if (result.profile.role === 'admin') window.location.href = 'admin-dashboard.html'
-            else if (result.profile.role === 'recharge_agent') window.location.href = 'agent-recharge.html'
-            else if (result.profile.role === 'host_agent') window.location.href = 'agent-host.html'
-            else if (result.profile.role === 'host') window.location.href = 'host-dashboard.html'
-            else window.location.href = 'user-dashboard.html'
-        } else {
-            const res = await fetch(API_BASE + '/api/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            })
-            const result = await res.json()
-            if (result.error) { showError(result.error); return; }
-            alert(t('created'))
-            isLogin = true
-            formTitle.textContent = t('loginTitle')
-            submitBtn.textContent = t('loginBtn')
-            toggleLink.textContent = t('noAccount')
-        }
-    })
+    if (isLogin) {
+      supabaseClient.auth.signInWithPassword({ email: email, password: password }).then(function(result) {
+        if (result.error) { showError(result.error.message); return; }
+        fetch(API_BASE + '/api/get-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: result.data.user.id })
+        }).then(function(r) { return r.json(); }).then(function(data) {
+          if (data.error) { showError(data.error); return; }
+          localStorage.setItem('current_user', JSON.stringify(data.profile));
+          var role = data.profile.role;
+          if (role === 'admin') location.href = 'admin-dashboard.html';
+          else if (role === 'recharge_agent') location.href = 'agent-recharge.html';
+          else if (role === 'host_agent') location.href = 'agent-host.html';
+          else if (role === 'host') location.href = 'host-dashboard.html';
+          else location.href = 'user-dashboard.html';
+        });
+      });
+    } else {
+      fetch(API_BASE + '/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: password })
+      }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.error) { showError(data.error); return; }
+        alert(t ? t('created') : 'تم إنشاء الحساب، سجل دخول الآن');
+        isLogin = true;
+        formTitle.textContent = t ? t('loginTitle') : 'تسجيل الدخول';
+        submitBtn.textContent = t ? t('loginBtn') : 'دخول';
+        toggleLink.textContent = t ? t('noAccount') : 'ليس لديك حساب؟ سجل الآن';
+      });
+    }
+  };
 
-    toggleLink.addEventListener('click', () => {
-        isLogin = !isLogin
-        formTitle.textContent = isLogin ? t('loginTitle') : t('signupTitle')
-        submitBtn.textContent = isLogin ? t('loginBtn') : t('signupBtn')
-        toggleLink.textContent = isLogin ? t('noAccount') : t('hasAccount')
-    })
+  toggleLink.onclick = function() {
+    isLogin = !isLogin;
+    formTitle.textContent = isLogin ? (t ? t('loginTitle') : 'تسجيل الدخول') : (t ? t('signupTitle') : 'إنشاء حساب جديد');
+    submitBtn.textContent = isLogin ? (t ? t('loginBtn') : 'دخول') : (t ? t('signupBtn') : 'تسجيل');
+    toggleLink.textContent = isLogin ? (t ? t('noAccount') : 'ليس لديك حساب؟ سجل الآن') : (t ? t('hasAccount') : 'لديك حساب؟ سجل دخول');
+  };
+})();
 </script>
 </body>
 </html>
