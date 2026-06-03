@@ -14,15 +14,17 @@
         .toggle { margin-top: 15px; font-size: 0.8rem; cursor: pointer; color: #ddd; }
         .error { color: #ff6b6b; margin-top: 10px; }
     </style>
+  <script src="lang.js"></script>
 </head>
 <body>
 <div class="card">
     <h2>✨ ZAFFA LIVE ✨</h2>
-    <h3 id="form-title">تسجيل الدخول</h3>
-    <input type="email" id="email" placeholder="البريد الإلكتروني">
-    <input type="password" id="password" placeholder="كلمة المرور">
-    <button id="submit-btn">دخول</button>
-    <div class="toggle" id="toggle-link">ليس لديك حساب؟ سجل الآن</div>
+    <button onclick="toggleLang()" style="position:absolute;top:10px;right:10px;width:auto;padding:5px 15px;font-size:0.8rem;background:#333;color:#fff;border-radius:20px;" id="lang-toggle"></button>
+    <h3 id="form-title"></h3>
+    <input type="email" id="email" id="email-placeholder-id" placeholder="">
+    <input type="password" id="password" id="pass-placeholder-id" placeholder="">
+    <button id="submit-btn"></button>
+    <div class="toggle" id="toggle-link"></div>
     <div class="error" id="error-msg"></div>
 </div>
 
@@ -40,12 +42,19 @@
     const emailInput = document.getElementById('email')
     const passwordInput = document.getElementById('password')
 
+    document.getElementById("lang-toggle").textContent = t("switchLang");
+    formTitle.textContent = t("loginTitle");
+    emailInput.placeholder = t("email");
+    passwordInput.placeholder = t("password");
+    submitBtn.textContent = t("loginBtn");
+    toggleLink.textContent = t("noAccount");
+
     function showError(msg) { errorMsg.innerText = msg; setTimeout(() => errorMsg.innerText = '', 3000); }
 
     submitBtn.addEventListener('click', async () => {
         const email = emailInput.value.trim()
         const password = passwordInput.value.trim()
-        if (!email || !password) { showError('املأ الحقول'); return; }
+        if (!email || !password) { showError(t('fillFields')); return; }
 
         if (isLogin) {
             const { data, error } = await supabase.auth.signInWithPassword({ email, password })
@@ -71,19 +80,19 @@
             })
             const result = await res.json()
             if (result.error) { showError(result.error); return; }
-            alert('تم إنشاء الحساب، سجل دخول الآن')
+            alert(t('created'))
             isLogin = true
-            formTitle.innerText = 'تسجيل الدخول'
-            submitBtn.innerText = 'دخول'
-            toggleLink.innerText = 'ليس لديك حساب؟ سجل الآن'
+            formTitle.textContent = t('loginTitle')
+            submitBtn.textContent = t('loginBtn')
+            toggleLink.textContent = t('noAccount')
         }
     })
 
     toggleLink.addEventListener('click', () => {
         isLogin = !isLogin
-        formTitle.innerText = isLogin ? 'تسجيل الدخول' : 'إنشاء حساب جديد'
-        submitBtn.innerText = isLogin ? 'دخول' : 'تسجيل'
-        toggleLink.innerText = isLogin ? 'ليس لديك حساب؟ سجل الآن' : 'لديك حساب؟ سجل دخول'
+        formTitle.textContent = isLogin ? t('loginTitle') : t('signupTitle')
+        submitBtn.textContent = isLogin ? t('loginBtn') : t('signupBtn')
+        toggleLink.textContent = isLogin ? t('noAccount') : t('hasAccount')
     })
 </script>
 </body>
